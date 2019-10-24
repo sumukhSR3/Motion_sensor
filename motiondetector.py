@@ -5,12 +5,13 @@ from time import time
 from datetime import datetime
 
 class MotionDetector():
-	def __init__(self, thresh=8, patience=30, annotate=False):
+	def __init__(self, cam_idx=0, esc=27, thresh=8, patience=30, annotate=False):
+		self.esc = esc
 		self.thresh = thresh
 		self.patience = patience
 		self.annotate = annotate
 		self.move_time = None #time of move if move in last patience seconds, else none
-		self.cap = cv.VideoCapture(0)
+		self.cap = cv.VideoCapture(cam_idx)
 		self.img = self.cap.read()[1]
 		self.height, self.width, _ = self.img.shape
 		self.gray = self.to_gray(self.img)
@@ -77,7 +78,7 @@ class MotionDetector():
 
 	def check_exit(self):
 		k = cv.waitKey(10)
-		if k == 27:
+		if k == self.esc:
 			self.cap.release()
 			exit()
 
