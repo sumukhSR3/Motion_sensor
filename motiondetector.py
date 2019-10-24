@@ -5,9 +5,10 @@ from time import time
 from datetime import datetime
 
 class MotionDetector():
-	def __init__(self, cam_idx=0, esc=27, thresh=8, patience=30, annotate=False):
+	def __init__(self, cam_idx=0, esc=27, fps=30, thresh=8, patience=30, annotate=False):
 		self.esc = esc
 		self.thresh = thresh
+		self.fps = fps
 		self.patience = patience
 		self.annotate = annotate
 		self.move_time = None #time of move if move in last patience seconds, else none
@@ -38,8 +39,8 @@ class MotionDetector():
 		os.mkdir(folder)
 		del_name = folder+'delta.avi'
 		img_name = folder+'feed.avi'
-		self.delwriter = cv.VideoWriter(del_name, self.codec, 30, (self.width, self.height), isColor=False)
-		self.imgwriter = cv.VideoWriter(img_name, self.codec, 30, (self.width, self.height))
+		self.delwriter = cv.VideoWriter(del_name, self.codec, self.fps, (self.width, self.height), isColor=False)
+		self.imgwriter = cv.VideoWriter(img_name, self.codec, self.fps, (self.width, self.height))
 		self.move_time = time()
 
 	def write_recorder(self):
