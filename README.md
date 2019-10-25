@@ -6,9 +6,9 @@ A cat detection system (more precisely, a motion detection system currently used
 Used to investigate my housemates' suspicions that a cat has been sneaking into our house in the early morning via our front door mail slot. 
 
 ### User Interface and What To Expect
-Constantly displays the camera feed and a 'delta' feed, a black and white representation of movement in the environment.
+Constantly displays the camera feed and two 'delta' feeds, both being grayscale representations of movement in the environment. One delta feed's pixels are given by the absolute difference in intensity between each frame, so faster movement gives higher intensity pixels. The other is that feed converted to black and white by thresholding with a parameter (default=8). 
 
-When motion is detected, it begins saving both video feeds. The video feeds are saved until 30 seconds has passed without movement. The videos are saved to timestamped folders, and the camera feed video is annotated with the time and the status (whether motion is detected at each given moment). 
+When motion is detected, it begins saving the three video feeds. These are saved until 30 seconds has passed without movement. The videos are saved to timestamped folders, and the camera feed video is annotated with the time and the status (whether motion is detected at each given moment). 
 
 To safely exit the program, press the escape key while one of the two windows is selected. 
 
@@ -22,7 +22,7 @@ Runs smoothly on a ubuntu machine with built in camera. To run on another machin
 - fps to match the frame rate of your system's camera
 
 ### The Back End
-Motion is detected by comparing each frame with the frame immediately before it. The frames are converted to grayscale, blurred with a Gaussian filter, and the element-wise absolute difference between frames is computed. A threshold (default=8) is applied to the result to map each value to 0 or 255. The resultant image is dilated for display purposes. If any of the resultant pixels are 255 then movement is detected.
+Motion is detected by background subtraction, in which the difference between each consecutive frame is calculated and studied. The frames are converted to grayscale, blurred with a Gaussian filter, and the element-wise absolute difference between frames is computed. A threshold (default=8) is applied to the result to map each value to 0 or 255. The resultant image is dilated for display purposes. If any of the resultant pixels are 255 then movement is detected.
 
-### Acknowledgement
+### References
 The use of Gaussian blurring for denoising, and dilation for display purposed were inpsired by [this](https://www.pyimagesearch.com/2015/05/25/basic-motion-detection-and-tracking-with-python-and-opencv/) blog post. 
