@@ -10,7 +10,7 @@ Constantly displays the camera feed and two 'delta' feeds, both being grayscale 
 
 When motion is detected, it begins saving the three video feeds. These are saved until 30 seconds has passed without movement. The videos are saved to timestamped folders, and the camera feed video is annotated with the time and the status (whether motion is detected at each given moment). 
 
-To safely exit the program, press the escape key while one of the two windows is selected. 
+To safely exit the program, press the escape key while one of the windows is selected. 
 
 ### Downloading and Running
 Clone the repository and install the packages listed in requirements.txt. 
