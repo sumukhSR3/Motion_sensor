@@ -9,8 +9,8 @@ __all__ = ['MotionDetector']
 
 class MotionDetector():
 	def __init__(
-		self, ESC=27, THRESH=8, PATIENCE=30, 
-		FRAME_COUNT=5, cam_idx=0, annotate=False
+		self, FPS=30, ESC=27, THRESH=8, PATIENCE=30, 
+		FRAME_COUNT=10, CAM_IDX=0, annotate=False
 		):
 		# system's escape key number
 		self.ESC = ESC
@@ -27,14 +27,14 @@ class MotionDetector():
 		# number of consecutive frames with motion
 		self.move_count = 0
 		self.memory = []
-		self.cap = cv.VideoCapture(cam_idx)
+		self.cap = cv.VideoCapture(CAM_IDX)
 		self.img = self.cap.read()[1]
 		self.height, self.width, _ = self.img.shape
 		self.gray = self.to_gray(self.img)
 		self.codec = cv.VideoWriter_fourcc('M','J','P','G')
 		if not os.path.exists('videos'): os.mkdir('videos')
 		# frame rate at which to save video
-		self.FPS = self.get_fps()
+		self.FPS = FPS if FPS else self.get_fps()
 
 	def get_fps(self):
 		start_time = time()
@@ -43,6 +43,9 @@ class MotionDetector():
 			self.cap.read()
 			cv.waitKey(10)
 			count += 1
+		print('Your camera is running at '+str(count)+' FPS. To reduce',
+				'initalization time, set FPS to this value in the',
+				'MotionDetector constructor\n')
 		return count
 
 	def display_feeds(self):
@@ -181,9 +184,5 @@ class MotionDetector():
 		self.cap.release()
 
 if __name__ == '__main__':
-	agent = MotionDetector(FRAME_COUNT=5, annotate=False)
+	agent = MotionDetector(FPS=None)
 	agent.run()
-
-'''
-add logic to either input FPS or get from method
-'''
