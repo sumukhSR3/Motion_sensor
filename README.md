@@ -34,4 +34,4 @@ Motion is detected by background subtraction, in which the difference between ea
 - This `memory` and `FRAME_COUNT` functionality were introduced to decrease the number of false positives that arised from flickering lights. Note that this functionality relies on the assumption that we are only interested in motions that begin with a consistent period of motion of at least `FRAME_COUNT / FPS` seconds. 
 
 ### References
-The use of Gaussian blurring for denoising, and dilation for display purposed were inpsired by [this](https://www.pyimagesearch.com/2015/05/25/basic-motion-detection-and-tracking-with-python-and-opencv/) blog post. 
+The use of Gaussian blurring for denoising and of dilation for display purposes were inpsired by [this](https://www.pyimagesearch.com/2015/05/25/basic-motion-detection-and-tracking-with-python-and-opencv/) blog post. 
