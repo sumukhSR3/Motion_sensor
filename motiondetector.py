@@ -1,23 +1,49 @@
 import os
-import numpy as np
-import cv2 as cv
 from time import time
 from datetime import datetime
 
+import numpy as np
+import cv2 as cv
+
+__all__ = ['MotionDetector']
+
 class MotionDetector():
-	def __init__(self, cam_idx=0, esc=27, fps=30, thresh=8, patience=30, annotate=False):
-		self.esc = esc # system's escape key number
-		self.thresh = thresh # changes in pixel intensity >= thresh are considered movement
-		self.fps = fps # frame rate at which to save video
-		self.patience = patience # how long to record video after motion detected
-		self.annotate = annotate # if true add bounding rectangle to video feed
-		self.move_time = None # time of move if move in last patience seconds, else none
+	def __init__(
+		self, ESC=27, THRESH=8, PATIENCE=30, 
+		FRAME_COUNT=5, cam_idx=0, annotate=False
+		):
+		# system's escape key number
+		self.ESC = ESC
+		# changes in pixel intensity >= thresh are considered movement
+		self.THRESH = THRESH
+		# how long to record video after motion detected
+		self.PATIENCE = PATIENCE
+		# min number of consecutive frames to begin recording
+		self.FRAME_COUNT = FRAME_COUNT
+		# if true add bounding rectangle to video feed 
+		self.annotate = annotate
+		# time of move if move in last PATIENCE seconds, else none
+		self.move_time = None
+		# number of consecutive frames with motion
+		self.move_count = 0
+		self.memory = []
 		self.cap = cv.VideoCapture(cam_idx)
 		self.img = self.cap.read()[1]
 		self.height, self.width, _ = self.img.shape
 		self.gray = self.to_gray(self.img)
 		self.codec = cv.VideoWriter_fourcc('M','J','P','G')
-		if not os.path.exists('videos'): os.mkdir('videos') # folder to store videos
+		if not os.path.exists('videos'): os.mkdir('videos')
+		# frame rate at which to save video
+		self.FPS = self.get_fps()
+
+	def get_fps(self):
+		start_time = time()
+		count = 0
+		while time() < start_time + 1:
+			self.cap.read()
+			cv.waitKey(10)
+			count += 1
+		return count
 
 	def display_feeds(self):
 		'''
@@ -30,14 +56,21 @@ class MotionDetector():
 	def add_info(self):
 		'''
 		Add time, status (whether movement is detected) to video feed
-		Also add bouding box around movement if annotate parameter is True
+		Add bouding box around movement if annotate parameter is True
 		'''
 		cur_time = datetime.now().strftime('%I:%M:%S')
-		cv.putText(self.img, cur_time, (10, self.height-10), cv.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,255), 1)
-		text = 'Movement Detected' if self.hasMovement else 'No Movement'
-		cv.putText(self.img, text, (10,20), cv.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,255), 1)
-		if not self.annotate or not self.hasMovement: return
-		(x,y,w,h) = cv.boundingRect(self.delta)
+		text = 'Movement Detected' if self.move_count > 0 else 'No Movement'
+		cv.putText(
+			self.img, cur_time, (10, self.height-10), 
+			cv.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,255), 1
+			)
+		cv.putText(
+			self.img, text, (10,20), 
+			cv.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,255), 1
+			)
+		if not self.annotate or self.move_count == 0:
+			return
+		(x,y,w,h) = cv.boundingRect(self.delta_thresh)
 		cv.rectangle(self.img, (x,y), (x+w,y+h), (0,255,0), 2)
 
 	def initialize_recorder(self):
@@ -49,10 +82,27 @@ class MotionDetector():
 		del_name = folder+'delta.avi'
 		del_thresh_name = folder+'delta_thresh.avi'
 		img_name = folder+'feed.avi'
-		self.delwriter = cv.VideoWriter(del_name, self.codec, self.fps, (self.width, self.height), isColor=False)
-		self.delthreshwriter = cv.VideoWriter(del_thresh_name, self.codec, self.fps, (self.width, self.height), isColor=False)
-		self.imgwriter = cv.VideoWriter(img_name, self.codec, self.fps, (self.width, self.height))
+		self.delwriter = cv.VideoWriter(
+			del_name, self.codec, self.FPS, 
+			(self.width, self.height), isColor=False
+			)
+		self.delthreshwriter = cv.VideoWriter(
+			del_thresh_name, self.codec, self.FPS, 
+			(self.width, self.height), isColor=False
+			)
+		self.imgwriter = cv.VideoWriter(
+			img_name, self.codec, self.FPS, 
+			(self.width, self.height)
+			)
 		self.move_time = time()
+		self.write_memory()
+
+	def write_memory(self):
+		for (img, delta, delta_thresh) in self.memory:
+			self.imgwriter.write(img)
+			self.delwriter.write(delta)
+			self.delthreshwriter.write(delta_thresh)
+		self.memory = []
 
 	def write_recorder(self):
 		'''
@@ -66,18 +116,21 @@ class MotionDetector():
 		'''
 		Begin, continue, or stop saving video to file as necessary
 		'''
-		if self.hasMovement and self.move_time: # extend recording time
+		# extend recording time
+		if self.move_count > 0 and self.move_time: 
 			self.move_time = time()
 			self.write_recorder()
-		elif self.hasMovement and not self.move_time: # begin writing frames to new video
+		# begin writing frames to new video
+		elif self.move_count >= self.FRAME_COUNT and not self.move_time:
 			cur_time = datetime.now().strftime('%I:%M:%S')
 			print(cur_time+' - Began recording.')
 			self.initialize_recorder()
 			self.write_recorder()
-		elif not self.hasMovement and self.move_time: 
-			if time() <= self.move_time + self.patience: # write frames to video
+		# determine if recording should be stopped
+		elif not self.move_count > 0  and self.move_time: 
+			if time() <= self.move_time + self.PATIENCE:
 				self.write_recorder()
-			else: 										# stop writing
+			else: 
 				cur_time = datetime.now().strftime('%I:%M:%S')
 				print(cur_time+' - Finished recording.\n')
 				self.move_time = None
@@ -96,25 +149,41 @@ class MotionDetector():
 		'''
 		gray2 = self.to_gray(self.img)
 		self.delta = cv.absdiff(self.gray, gray2)
-		self.delta_thresh = cv.threshold(self.delta, self.thresh, 255, cv.THRESH_BINARY)[1]
+		self.delta_thresh = cv.threshold(
+			self.delta, self.THRESH, 255, cv.THRESH_BINARY
+			)[1]
 		self.delta_thresh = cv.dilate(self.delta_thresh, None, iterations=3)
-		self.hasMovement = bool(self.delta_thresh.sum())
 		self.gray = gray2
+
+	def update_memory(self):
+		# update number of consecutive frames with motion
+		if self.delta_thresh.sum() > 0:
+			self.memory.append((self.img, self.delta, self.delta_thresh))
+			self.move_count += 1
+		else:
+			self.memory = []
+			self.move_count = 0
 
 	def run(self):
 		'''
 		Execute until user presses esc key
 		'''
-		k = cv.waitKey(10)
-		while k != self.esc:
+		usr_input = cv.waitKey(10)
+		start_time = time()
+		while usr_input != self.ESC:
 			self.img = self.cap.read()[1]
 			self.get_delta()
 			self.add_info()
+			self.update_memory()
 			self.update_recorder()
 			self.display_feeds()
-			k = cv.waitKey(10)
+			usr_input = cv.waitKey(10)
 		self.cap.release()
 
 if __name__ == '__main__':
-	agent = MotionDetector()
+	agent = MotionDetector(FRAME_COUNT=5, annotate=False)
 	agent.run()
+
+'''
+add logic to either input FPS or get from method
+'''
