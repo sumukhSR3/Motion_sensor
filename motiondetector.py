@@ -37,16 +37,15 @@ class MotionDetector():
 		self.FPS = FPS if FPS else self.get_fps()
 
 	def get_fps(self):
+		num_frames = 60
 		start_time = time()
-		count = 0
-		while time() < start_time + 1:
+		for _ in range(num_frames):
 			self.cap.read()
-			cv.waitKey(10)
-			count += 1
-		print('Your camera is running at '+str(count)+' FPS. To reduce',
+		fps = round(num_frames/(time()-start_time))
+		print('Your camera is running at '+str(fps)+' FPS. To reduce',
 				'initalization time, set FPS to this value in the',
 				'MotionDetector constructor\n')
-		return count
+		return fps
 
 	def display_feeds(self):
 		'''
@@ -184,5 +183,5 @@ class MotionDetector():
 		self.cap.release()
 
 if __name__ == '__main__':
-	agent = MotionDetector(FPS=None)
+	agent = MotionDetector(FPS=30)
 	agent.run()
