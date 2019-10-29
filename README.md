@@ -16,10 +16,10 @@ To safely exit the program, press the escape key while one of the windows is sel
 Clone the repository and install the packages listed in requirements.txt. 
 
 ### Adapting to Your Machine
-Runs smoothly on a ubuntu machine with built in camera. To run on another machine, it may be necessary to changed the following constants in the MotionDetector object initialization:
+Runs smoothly on a ubuntu machine with built in camera. To run on another machine, it may be necessary to change the following constants in the MotionDetector object initialization:
 - `CAM_IDX` to your system's camera index
 - `ESC` to your system's 'esc' key number
-- `FPS` to the frame rate of your camera
+- `FPS` (default None) to the frame rate of your camera. If None, it is calculated and printed by `GET_FPS`, but adding it directly as input to the constructor saves you 1 second at the beginning of each run. 
 
 ### Parameters / Constants to Change to Your Needs
 - `THRESH` (default 8): the minimum change in pixel intensity required to be considered motion
