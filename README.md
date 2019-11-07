@@ -1,4 +1,4 @@
-# MotionDetection
+# motion-detection
 
 A cat detection system (a motion detection system currently used for cat detection) implemented using openCV-python. 
 
