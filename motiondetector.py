@@ -34,7 +34,7 @@ class MotionDetector():
 		self.codec = cv.VideoWriter_fourcc('M','J','P','G')
 		if not os.path.exists('videos'): os.mkdir('videos')
 		# frame rate at which to save video
-		self.FPS = FPS if FPS else self.get_fps()
+		self.FPS = self.get_fps() if FPS is None else FPS
 
 	def get_fps(self):
 		num_frames = 60
@@ -119,11 +119,11 @@ class MotionDetector():
 		Begin, continue, or stop saving video to file as necessary
 		'''
 		# extend recording time
-		if self.move_count > 0 and self.move_time: 
+		if self.move_count > 0 and self.move_time is not None: 
 			self.move_time = time()
 			self.write_recorder()
 		# begin writing frames to new video
-		elif self.move_count >= self.FRAME_COUNT and not self.move_time:
+		elif self.move_count >= self.FRAME_COUNT and self.move_time is None:
 			cur_time = datetime.now().strftime('%I:%M:%S')
 			print(cur_time+' - Began recording.')
 			self.initialize_recorder()
