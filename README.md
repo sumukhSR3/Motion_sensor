@@ -13,7 +13,14 @@ When motion is detected for `FRAME_COUNT` (default 5) consecutive frames, it beg
 To safely exit the program, press the escape key while one of the windows is selected. 
 
 ### Downloading and Running
-Clone the repository and install the packages listed in requirements.txt. 
+```
+git clone https://github.com/danitamm/motion-detection.git
+cd motion-detection
+virtualenv -p python3 env
+source env/bin/activate
+pip install -r requirements.txt
+python motiondetector.py
+```
 
 ### Adapting to Your Machine
 Runs smoothly on a ubuntu machine with built in camera. To run on another machine, it may be necessary to change the following constants in the MotionDetector object initialization:
