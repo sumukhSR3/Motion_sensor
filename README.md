@@ -1,6 +1,6 @@
 # motion-detection
 
-A cat detection system (a motion detection system currently used for cat detection) implemented using openCV-python. 
+A motion-activated video camera implemented using openCV-python. 
 
 ### Inspiration/Use Case
 Used to investigate my housemates' suspicions that a cat has been sneaking into our house in the early morning via our front door mail slot. 
